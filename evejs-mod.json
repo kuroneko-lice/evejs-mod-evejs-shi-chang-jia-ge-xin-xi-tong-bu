@@ -5,16 +5,16 @@
     "name": "余情岂是为他人"
   },
   "category": "经济",
-  "changelog": "## 1.0.5 - 2026-11-05\n\n- 新增：状态文件带 `writtenAt`（写入时刻）与 `pid`；进程正常退出时尽力把 `running` 落回 `false`。进程被强杀时 `running: true` 会滞留——以 `writtenAt` 或锁文件心跳判断引擎是否真活着\n\n## 1.0.4 - 2026-11-05\n\n- 修复：HTTP 超时只保护到\"响应头到达\"，`fetch` 的响应体读取阶段无保护——ESI 响应体在网络抖动时缓慢流入会把同步周期永久挂住（现象：状态文件停在 `running:true`、计数全 0、无报错）。现在超时覆盖整个请求（含 body 读取），超时错误有明确中文信息\n- ESI 拉取超时放宽到 90s（响应体 1MB+，容忍慢速网络；失败仍由启动重试窗口兜底）\n\n## 1.0.3 - 2026-11-05\n\n- 修复：启动轮若赶上市场守护进程尚未就绪会直接失败且再无机会（现象：状态文件 `lastError: \"fetch failed\"`、所有计数为 0）。新增启动重试窗口——失败后每 60 秒重试、最多 10 次，任一成功即永久停止\n- `runCycle` 现在返回成功与否；轮结束日志对失败轮追加\"未成功\"标记\n\n## 1.0.2 - 2026-11-05\n\n- 变更：取消周期循环，改为每次服务端启动执行一轮同步（`intervalMinutes` 配置项随之移除）\n- 新增：状态文件在周期开始即写 `running: true`，运行中每 1000 条落盘进度，长周期不再\"静默\"\n\n## 1.0.1 - 2026-11-05\n\n- 修复：EveJS 多进程都会加载模组导致多个同步引擎并发写 SQLite（`HTTP 500 database is locked`、触发熔断只改几十条）。新增 `sync-engine.lock` 跨进程单实例锁，待命进程每 5 分钟重查、可自动接管\n- 新增：单条调价失败按指数退避重试（HTTP 5xx/429/网络错误；`maxRetries`、`retryBaseDelayMs` 可配）\n- 调整：`concurrency` 默认 8 → 2（SQLite 单写者，大并发无收益）\n- 修复：熔断日志每个 worker 重复刷屏，改为只打一次",
+  "changelog": "- 变更：偏差超阈值的物品不再\"每轮只调最优卖价站\"，而是枚举其全部种子卖单站逐站校准：低于目标价的全调（不调它就会成为新的最优价），高于目标价的只调最低站；玩家卖单一律不碰。多站物品（如官员装备，23 个站同挂一个价）从\"要 20 多次启动才收敛\"变为一轮收敛\n- 新增：守护进程客户端封装 `GET /v1/orders/<region>/<type>` 订单簿读取（与调价相同的重试策略）；`orderBookConcurrency`（默认 8）控制只读枚举并发\n- 调整：`maxAdjustmentsPerCycle` 默认 20000 → 100000（站点级目标 = 物品数 × 站数，量级大一个数量级）\n- 新增：状态文件与结束日志区分\"候选物品 / 站点目标\"；枚举阶段每 1000 个物品落一次进度（`phase: enumerating/adjusting`），并统计订单簿读取失败数与\"无种子卖单\"物品数",
   "conflicts": [],
   "delisted": false,
-  "description": "",
+  "description": "从官方接口获取官方市场价格信息并进行同步，取代原种子中的模拟市场价格（注意：首次同步预计需要两小时）",
   "displayName": "市场价格信息同步",
   "downloadUrls": [
     {
       "mirror": "github",
       "priority": 1,
-      "url": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu/releases/download/v1.0.5/evejs-shi-chang-jia-ge-xin-xi-tong-bu-1.0.5.zip"
+      "url": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu/releases/download/v1.0.6/evejs-shi-chang-jia-ge-xin-xi-tong-bu-1.0.6.zip"
     }
   ],
   "evejsVersions": [
@@ -30,11 +30,11 @@
   ],
   "repo": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu",
   "requiresRestart": true,
-  "sha256": "86cb00a804c07caa49e88f2d17d1d7090e85036ccb7cb143679133087da9e941",
-  "sizeBytes": 30248,
+  "sha256": "8ccc96a26fa6d217efee6ef1c36aec81f48fc7febdfaedea0c4f204acdec673a",
+  "sizeBytes": 31760,
   "tags": [
-    "聊天",
-    "新手"
+    "市场",
+    "经济"
   ],
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
