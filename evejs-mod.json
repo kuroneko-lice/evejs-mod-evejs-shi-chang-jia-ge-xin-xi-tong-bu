@@ -1,0 +1,40 @@
+{
+  "author": {
+    "id": "au-mw0mr1zx2glu",
+    "keyId": "aab6116a46f0",
+    "name": "余情岂是为他人"
+  },
+  "category": "经济",
+  "changelog": "每 65 分钟拉一次 ESI 全类型价格",
+  "conflicts": [],
+  "delisted": false,
+  "description": "",
+  "displayName": "市场价格信息同步",
+  "downloadUrls": [
+    {
+      "mirror": "github",
+      "priority": 1,
+      "url": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu/releases/download/v1.0.0/evejs-shi-chang-jia-ge-xin-xi-tong-bu-1.0.0.zip"
+    }
+  ],
+  "evejsVersions": [
+    "261028.x"
+  ],
+  "featured": false,
+  "highlights": [],
+  "history": [],
+  "id": "evejs-shi-chang-jia-ge-xin-xi-tong-bu",
+  "publishedAt": "2026-11-05",
+  "readme": [
+    "把 CCP 官方 ESI 的市场价格周期性同步进本地单机市场。**纯 HTTP 方案：不打任何源码补丁、不改 `server/` 与 `externalservices/` 任何文件、不直接读写 `market.sqlite`。**"
+  ],
+  "repo": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu",
+  "requiresRestart": true,
+  "sha256": "da9a583e4711d501ee9a5b33574804a4922ce92a896227d6cb52f793b4629899",
+  "sizeBytes": 24841,
+  "tags": [
+    "聊天",
+    "新手"
+  ],
+  "version": "1.0.0"
+}
