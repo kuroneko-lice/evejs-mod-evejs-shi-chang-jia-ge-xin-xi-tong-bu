@@ -5,7 +5,7 @@
     "name": "余情岂是为他人"
   },
   "category": "经济",
-  "changelog": "- 变更（核心）：默认改为**直写市场数据库**（`lib/marketSqlite.js` + `lib/directSync.js`）——用服务端自带的 better-sqlite3 直接对 `market.sqlite` 做分块事务批量调价，并重建 `region_summaries` / `system_seed_summaries`（聚合语义与守护进程 state.rs 逐字一致）。首轮全量同步从 HTTP 逐条 adjust 的约两小时降到一两分钟（实测 46.5 万条写入 + 重建约 107 秒），增量秒级\n- 新增：**买单同步**（`syncSeedBuyOrders`，默认 true）——种子买单价同步到 `ESI目标价 × buyPriceMultiplier`（默认 0.85，取自原始种子 bid/ask 实测均值 0.8492）。HTTP 接口没有买单调价能力，这是直写独有；同时消除历史遗留的 2493 行 bid>ask 倒挂（已验证归零）\n- 新增配置：`directWrite`（默认 true）/ `directWriteFallbackToHttp`（默认 true，直写不可用时回退旧 HTTP 路径）/ `marketDatabasePath`（留空自动探测守护进程配置）/ `writeChunkSize`（默认 2000，分块大小，块间让出事件循环，服务端只有每块几十毫秒停顿）/ `directWriteMaxPerCycle`（默认 500000；`maxAdjustmentsPerCycle` 改为只约束 HTTP 回退路径）/ `callDaemonCacheRebuild`（默认 true，守护进程在线时直写完成后重建其内存缓存）\n- 兼容：守护进程未运行也能同步（它下次启动从库里读到新价）；数据库文件缺失/驱动加载失败/表结构锚点不符时记日志并回退 HTTP；`price_version` 只在价格真变化时 +1（幂等），`quantity` 不被调价改动\n- 内部：候选判定抽到 `lib/candidates.js`（HTTP 与直写共用）；守护进程客户端新增 `POST /v1/admin/cache/rebuild` 封装\n- 注意：`loader.js` 顶部注释仍描述旧行为（该文件在签名哈希内、已冻结），以本文件与 README 为准",
+  "changelog": "",
   "conflicts": [],
   "delisted": false,
   "description": "从官方接口获取官方市场价格信息并进行同步，取代原种子中的模拟市场价格（直写数据库，首轮全量约一两分钟）",
@@ -30,8 +30,8 @@
   ],
   "repo": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu",
   "requiresRestart": true,
-  "sha256": "c75b534f47c20395e95e4497f900dcb5aa8bb3d173420b59874992c68937f9d2",
-  "sizeBytes": 45618,
+  "sha256": "743ab507db080b51f78af29ecd5289c84c8eb0ceab8c63888206d39c5b283c21",
+  "sizeBytes": 47086,
   "tags": [
     "市场",
     "经济"
