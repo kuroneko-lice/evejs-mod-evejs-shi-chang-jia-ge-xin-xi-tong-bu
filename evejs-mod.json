@@ -5,16 +5,16 @@
     "name": "余情岂是为他人"
   },
   "category": "经济",
-  "changelog": "- 变更：偏差超阈值的物品不再\"每轮只调最优卖价站\"，而是枚举其全部种子卖单站逐站校准：低于目标价的全调（不调它就会成为新的最优价），高于目标价的只调最低站；玩家卖单一律不碰。多站物品（如官员装备，23 个站同挂一个价）从\"要 20 多次启动才收敛\"变为一轮收敛\n- 新增：守护进程客户端封装 `GET /v1/orders/<region>/<type>` 订单簿读取（与调价相同的重试策略）；`orderBookConcurrency`（默认 8）控制只读枚举并发\n- 调整：`maxAdjustmentsPerCycle` 默认 20000 → 100000（站点级目标 = 物品数 × 站数，量级大一个数量级）\n- 新增：状态文件与结束日志区分\"候选物品 / 站点目标\"；枚举阶段每 1000 个物品落一次进度（`phase: enumerating/adjusting`），并统计订单簿读取失败数与\"无种子卖单\"物品数",
+  "changelog": "- 变更（核心）：默认改为**直写市场数据库**（`lib/marketSqlite.js` + `lib/directSync.js`）——用服务端自带的 better-sqlite3 直接对 `market.sqlite` 做分块事务批量调价，并重建 `region_summaries` / `system_seed_summaries`（聚合语义与守护进程 state.rs 逐字一致）。首轮全量同步从 HTTP 逐条 adjust 的约两小时降到一两分钟（实测 46.5 万条写入 + 重建约 107 秒），增量秒级\n- 新增：**买单同步**（`syncSeedBuyOrders`，默认 true）——种子买单价同步到 `ESI目标价 × buyPriceMultiplier`（默认 0.85，取自原始种子 bid/ask 实测均值 0.8492）。HTTP 接口没有买单调价能力，这是直写独有；同时消除历史遗留的 2493 行 bid>ask 倒挂（已验证归零）\n- 新增配置：`directWrite`（默认 true）/ `directWriteFallbackToHttp`（默认 true，直写不可用时回退旧 HTTP 路径）/ `marketDatabasePath`（留空自动探测守护进程配置）/ `writeChunkSize`（默认 2000，分块大小，块间让出事件循环，服务端只有每块几十毫秒停顿）/ `directWriteMaxPerCycle`（默认 500000；`maxAdjustmentsPerCycle` 改为只约束 HTTP 回退路径）/ `callDaemonCacheRebuild`（默认 true，守护进程在线时直写完成后重建其内存缓存）\n- 兼容：守护进程未运行也能同步（它下次启动从库里读到新价）；数据库文件缺失/驱动加载失败/表结构锚点不符时记日志并回退 HTTP；`price_version` 只在价格真变化时 +1（幂等），`quantity` 不被调价改动\n- 内部：候选判定抽到 `lib/candidates.js`（HTTP 与直写共用）；守护进程客户端新增 `POST /v1/admin/cache/rebuild` 封装\n- 注意：`loader.js` 顶部注释仍描述旧行为（该文件在签名哈希内、已冻结），以本文件与 README 为准",
   "conflicts": [],
   "delisted": false,
-  "description": "从官方接口获取官方市场价格信息并进行同步，取代原种子中的模拟市场价格（注意：首次同步预计需要两小时）",
+  "description": "从官方接口获取官方市场价格信息并进行同步，取代原种子中的模拟市场价格（直写数据库，首轮全量约一两分钟）",
   "displayName": "市场价格信息同步",
   "downloadUrls": [
     {
       "mirror": "github",
       "priority": 1,
-      "url": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu/releases/download/v1.0.6/evejs-shi-chang-jia-ge-xin-xi-tong-bu-1.0.6.zip"
+      "url": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu/releases/download/v1.1.1/evejs-shi-chang-jia-ge-xin-xi-tong-bu-1.1.1.zip"
     }
   ],
   "evejsVersions": [
@@ -24,17 +24,17 @@
   "highlights": [],
   "history": [],
   "id": "evejs-shi-chang-jia-ge-xin-xi-tong-bu",
-  "publishedAt": "2026-11-05",
+  "publishedAt": "2026-11-06",
   "readme": [
-    "把 CCP 官方 ESI 的市场价格在**每次服务端启动时**同步进本地单机市场（只跑一轮，之后闲置到下次启动）。**纯 HTTP 方案：不打任何源码补丁、不改 `server/` 与 `externalservices/` 任何文件、不直接读写 `market.sqlite`。**"
+    "把 CCP 官方 ESI 的市场价格在**每次服务端启动时**同步进本地单机市场（只跑一轮，之后闲置到下次启动）。1.1.1 起默认**直写市场数据库**（`market.sqlite`，WAL 模式分块小事务），不打任何源码补丁、不改 `server/` 与 `externalservices/` 任何文件；守护进程未运行也能同步（它下次启动会从库里读到新价）。直写不可用时自动回退到旧的逐条 HTTP 调价路径。"
   ],
   "repo": "https://github.com/kuroneko-lice/evejs-mod-evejs-shi-chang-jia-ge-xin-xi-tong-bu",
   "requiresRestart": true,
-  "sha256": "8ccc96a26fa6d217efee6ef1c36aec81f48fc7febdfaedea0c4f204acdec673a",
-  "sizeBytes": 31760,
+  "sha256": "c75b534f47c20395e95e4497f900dcb5aa8bb3d173420b59874992c68937f9d2",
+  "sizeBytes": 45618,
   "tags": [
     "市场",
     "经济"
   ],
-  "version": "1.0.6"
+  "version": "1.1.1"
 }
